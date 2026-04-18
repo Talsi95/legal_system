@@ -5,7 +5,7 @@ import LawyerDashboard from './pages/LawyerDashboard';
 import ClientDashboard from './pages/ClientDashboard';
 import CaseDetails from './pages/CaseDetails';
 
-const PrivateRoute = ({ children, role }: { children: JSX.Element, role?: string }) => {
+const PrivateRoute = ({ children, role }: { children: React.ReactNode, role?: string }) => {
   const { user, loading } = useAuth();
 
   if (loading) return <div>טוען...</div>;
