@@ -6,16 +6,22 @@ interface Case {
     _id: string;
     title: string;
     status: string;
+    category: string;
     client: { name: string; email: string };
     deadlines: { dueDate: string; task: string }[];
 }
 
+const CATEGORIES = ['גירושין', 'נזיקין', 'פלילי', 'הוצל״פ', 'מקרקעין', 'אחר'];
+
 const LawyerDashboard = () => {
     const [cases, setCases] = useState<Case[]>([]);
     const [showForm, setShowForm] = useState(false);
-    const [newCase, setNewCase] = useState({ title: '', clientEmail: '' });
+    const [newCase, setNewCase] = useState({
+        title: '',
+        clientEmail: '',
+        category: ''
+    });
 
-    // טעינת התיקים מהשרת
     const fetchCases = async () => {
         try {
             const res = await api.get('/cases');
@@ -29,14 +35,17 @@ const LawyerDashboard = () => {
         fetchCases();
     }, []);
 
-    // יצירת תיק חדש
     const handleCreateCase = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
             await api.post('/cases', newCase);
-            setNewCase({ title: '', clientEmail: '' });
+            setNewCase({
+                title: '',
+                clientEmail: '',
+                category: 'אחר'
+            });
             setShowForm(false);
-            fetchCases(); // רענון הרשימה
+            fetchCases();
         } catch (err) {
             alert('שגיאה ביצירת התיק. ודא שהלקוח רשום במערכת.');
         }
@@ -61,12 +70,28 @@ const LawyerDashboard = () => {
                     <form onSubmit={handleCreateCase} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <input
                             type="text"
-                            placeholder="שם התיק (למשל: תביעת נזיקין - כהן)"
-                            className="border p-2 rounded"
+                            placeholder="שם התיק (למשל: תיק גירושין - משה כהן)"
+                            className="border p-2 rounded w-full"
                             value={newCase.title}
                             onChange={(e) => setNewCase({ ...newCase, title: e.target.value })}
                             required
                         />
+
+                        <select
+                            className="border p-2 rounded w-full bg-white"
+                            value={newCase.category}
+                            onChange={(e) => setNewCase({ ...newCase, category: e.target.value })}
+                            required
+                        >
+                            <option value="" disabled>
+                                בחר קטגוריה...
+                            </option>
+                            {CATEGORIES.map((cat) => (
+                                <option key={cat} value={cat}>
+                                    {cat}
+                                </option>
+                            ))}
+                        </select>
                         <input
                             type="email"
                             placeholder="אימייל הלקוח (חייב להיות רשום)"
@@ -90,11 +115,19 @@ const LawyerDashboard = () => {
                     cases.map((c) => (
                         <div key={c._id} className="bg-white p-6 rounded-lg shadow border-r-4 border-blue-500 hover:shadow-md transition">
                             <div className="flex justify-between items-start">
-                                <div>
-                                    <h3 className="text-xl font-bold text-gray-800">{c.title}</h3>
-                                    <p className="text-sm text-gray-600">לקוח: {c.client.name} ({c.client.email})</p>
+                                <div className="flex flex-col gap-1">
+                                    <div className="flex items-center gap-3">
+                                        <h3 className="text-xl font-bold text-gray-800">{c.title}</h3>
+                                        <span className="bg-blue-50 text-blue-600 text-[10px] px-2 py-0.5 rounded border border-blue-100 font-medium">
+                                            {c.category}
+                                        </span>
+                                    </div>
+                                    <p className="text-sm text-gray-600 font-medium">
+                                        לקוח: {c.client.name} <span className="text-gray-400 font-normal">({c.client.email})</span>
+                                    </p>
                                 </div>
-                                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${c.status === 'open' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+
+                                <span className={`px-3 py-1 rounded-full text-xs font-bold ${c.status === 'open' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
                                     }`}>
                                     {c.status === 'open' ? 'פעיל' : 'בטיפול'}
                                 </span>

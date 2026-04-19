@@ -1,22 +1,21 @@
 import { Request, Response } from 'express';
 import Case from '../models/Case';
+import User from '../models/User';
 
-// יצירת תיק חדש - רק עורך דין יכול
 export const createCase = async (req: any, res: Response) => {
   try {
-    const { title, clientEmail, status } = req.body;
-    
-    // מציאת הלקוח לפי אימייל (אפשר גם לפי ID)
-    const User = require('../models/User').default;
+    const { title, clientEmail, status, category } = req.body;
+
     const client = await User.findOne({ email: clientEmail.toLowerCase() });
-    
+
     if (!client) return res.status(404).json({ msg: 'Client not found' });
 
     const newCase = new Case({
       title,
-      lawyer: req.user.id, // נלקח מה-Token
+      lawyer: req.user.id,
       client: client._id,
-      status
+      status: status || 'open',
+      category: category || 'אחר'
     });
 
     await newCase.save();
@@ -26,7 +25,6 @@ export const createCase = async (req: any, res: Response) => {
   }
 };
 
-// שליפת תיקים - לקוח רואה רק את שלו, עורך דין רואה את כולם
 export const getCases = async (req: any, res: Response) => {
   try {
     let query = {};
@@ -43,12 +41,11 @@ export const getCases = async (req: any, res: Response) => {
   }
 };
 
-// הוספת עדכון לציר הזמן (Timeline)
 export const addUpdate = async (req: Request, res: Response) => {
   try {
     const { title, description } = req.body;
     const legalCase = await Case.findById(req.params.id);
-    
+
     if (!legalCase) return res.status(404).json({ msg: 'Case not found' });
 
     legalCase.timeline.unshift({ title, description, date: new Date() });
@@ -60,7 +57,6 @@ export const addUpdate = async (req: Request, res: Response) => {
   }
 };
 
-// הוספת מועד חשוב (Deadline)
 export const addDeadline = async (req: Request, res: Response) => {
   try {
     const { task, dueDate } = req.body;

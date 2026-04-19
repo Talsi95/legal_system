@@ -1,5 +1,15 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
+export enum CaseCategory {
+  DIVORCE = 'גירושין',
+  TORTS = 'נזיקין',
+  CRIMINAL = 'פלילי',
+  EXECUTION = 'הוצל״פ',
+  REAL_ESTATE = 'מקרקעין',
+  OTHER = 'אחר'
+}
+
+
 export interface IUpdate {
   date: Date;
   title: string;
@@ -26,6 +36,11 @@ const CaseSchema: Schema = new Schema({
   lawyer: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   client: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   status: { type: String, enum: ['open', 'in-progress', 'closed'], default: 'open' },
+  category: {
+    type: String,
+    enum: Object.values(CaseCategory),
+    default: CaseCategory.OTHER
+  },
   timeline: [{
     date: { type: Date, default: Date.now },
     title: String,
