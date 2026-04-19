@@ -57,6 +57,44 @@ export const addUpdate = async (req: Request, res: Response) => {
   }
 };
 
+export const toggleUpdateStatus = async (req: Request, res: Response) => {
+  try {
+    const { id, updateId } = req.params;
+    const legalCase = await Case.findById(id);
+
+    if (!legalCase) return res.status(404).json({ msg: 'Case not found' });
+
+    const update = (legalCase.timeline as any).id(updateId);
+
+    if (!update) return res.status(404).json({ msg: 'Update not found' });
+
+    update.isCompleted = !update.isCompleted;
+
+    await legalCase.save();
+    res.json(legalCase);
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+export const deleteUpdate = async (req: Request, res: Response) => {
+  try {
+    const { id, updateId } = req.params;
+
+    const updatedCase = await Case.findByIdAndUpdate(
+      id,
+      { $pull: { timeline: { _id: updateId } } },
+      { new: true }
+    );
+
+    if (!updatedCase) return res.status(404).json({ msg: 'Case not found' });
+
+    res.json(updatedCase);
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
 export const addDeadline = async (req: Request, res: Response) => {
   try {
     const { task, dueDate } = req.body;

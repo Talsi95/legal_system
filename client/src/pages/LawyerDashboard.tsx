@@ -63,7 +63,6 @@ const LawyerDashboard = () => {
                 </button>
             </div>
 
-            {/* טופס יצירת תיק */}
             {showForm && (
                 <div className="bg-white p-6 rounded-lg shadow-md mb-8 border-t-4 border-blue-600">
                     <h2 className="text-lg font-semibold mb-4">פתיחת תיק חדש</h2>
@@ -107,7 +106,6 @@ const LawyerDashboard = () => {
                 </div>
             )}
 
-            {/* רשימת התיקים */}
             <div className="grid grid-cols-1 gap-6">
                 {cases.length === 0 ? (
                     <p className="text-gray-500 text-center py-10">אין תיקים פעילים כרגע.</p>
@@ -133,7 +131,6 @@ const LawyerDashboard = () => {
                                 </span>
                             </div>
 
-                            {/* הצגת דדליין קרוב אם קיים */}
                             {c.deadlines.length > 0 && (
                                 <div className="mt-4 p-3 bg-red-50 rounded border border-red-100">
                                     <p className="text-xs text-red-600 font-bold uppercase">אירוע קרוב:</p>

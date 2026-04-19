@@ -18,10 +18,8 @@ const Login = () => {
             const response = await api.post('/auth/login', { email, password });
             const { token, user } = response.data;
 
-            // עדכון ה-Context וה-LocalStorage
             login(token, user);
 
-            // ניתוב לפי תפקיד
             if (user.role === 'lawyer') {
                 navigate('/lawyer');
             } else {

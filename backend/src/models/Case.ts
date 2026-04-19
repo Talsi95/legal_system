@@ -44,7 +44,8 @@ const CaseSchema: Schema = new Schema({
   timeline: [{
     date: { type: Date, default: Date.now },
     title: String,
-    description: String
+    description: String,
+    isCompleted: { type: Boolean, default: false }
   }],
   deadlines: [{
     dueDate: Date,

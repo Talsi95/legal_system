@@ -3,7 +3,6 @@ import nodemailer from 'nodemailer';
 import Case from '../models/Case';
 import User from '../models/User';
 
-// הגדרת הטרנספורטר של המייל (למשל Gmail או Mailtrap לבדיקות)
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -12,7 +11,6 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// פונקציית עזר לחישוב טווח תאריכים ליום ספציפי
 const getDayRange = (daysToAdd: number) => {
   const start = new Date();
   start.setDate(start.getDate() + daysToAdd);
@@ -25,7 +23,6 @@ const getDayRange = (daysToAdd: number) => {
 };
 
 export const initNotificationJob = () => {
-  // הרצה בכל יום בשעה 08:00
   cron.schedule('0 8 * * *', async () => {
     console.log('Running daily deadline check (1 day & 7 days)...');
 
@@ -33,7 +30,6 @@ export const initNotificationJob = () => {
       const tomorrow = getDayRange(1);
       const nextWeek = getDayRange(7);
 
-      // חיפוש תיקים עם דדליינים שנופלים או מחר או בעוד שבוע
       const casesWithDeadlines = await Case.find({
         'deadlines.dueDate': {
           $or: [
@@ -50,14 +46,12 @@ export const initNotificationJob = () => {
 
           let timeFrameLabel = '';
 
-          // בדיקה איזה סוג תזכורת זו
           if (deadline.dueDate >= tomorrow.start && deadline.dueDate < tomorrow.end) {
             timeFrameLabel = 'מחר';
           } else if (deadline.dueDate >= nextWeek.start && deadline.dueDate < nextWeek.end) {
             timeFrameLabel = 'בעוד שבוע';
           }
 
-          // אם הדדליין לא באחד מהטווחים האלו (למשל דדליין אחר באותו תיק), נמשיך הלאה
           if (!timeFrameLabel) continue;
 
           const mailOptions = {
