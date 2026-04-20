@@ -16,6 +16,9 @@ const CATEGORIES = ['גירושין', 'נזיקין', 'פלילי', 'הוצל״�
 const LawyerDashboard = () => {
     const [cases, setCases] = useState<Case[]>([]);
     const [showForm, setShowForm] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [showClientForm, setShowClientForm] = useState(false);
+    const [newClient, setNewClient] = useState({ name: '', email: '', phone: '' });
     const [newCase, setNewCase] = useState({
         title: '',
         clientEmail: '',
@@ -34,6 +37,29 @@ const LawyerDashboard = () => {
     useEffect(() => {
         fetchCases();
     }, []);
+
+    const filteredCases = cases.filter((c) =>
+        c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        c.client.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const handleCreateClient = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            const res = await api.post('/auth/create-client', newClient);
+            const tempPass = res.data.tempPassword;
+            alert(`הלקוח נוצר! הסיסמה הזמנית שלו היא: ${tempPass}. אנא מסור לו אותה.`);
+            setNewCase({
+                ...newCase,
+                clientEmail: newClient.email.toLowerCase()
+            });
+            setNewClient({ name: '', email: '', phone: '' });
+            setShowClientForm(false);
+            setShowForm(true);
+        } catch (err: any) {
+            alert(err.response?.data?.msg || 'שגיאה ביצירת הלקוח');
+        }
+    };
 
     const handleCreateCase = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -55,13 +81,44 @@ const LawyerDashboard = () => {
         <div className="p-8 max-w-6xl mx-auto font-sans" dir="rtl">
             <div className="flex justify-between items-center mb-8">
                 <h1 className="text-2xl font-bold text-gray-800">ניהול תיקים - עורך דין</h1>
-                <button
-                    onClick={() => setShowForm(!showForm)}
-                    className="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 transition"
-                >
-                    {showForm ? 'סגור טופס' : '+ תיק חדש'}
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => setShowClientForm(!showClientForm)}
+                        className="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700 transition"
+                    >
+                        {showClientForm ? 'סגור' : '+ לקוח חדש'}
+                    </button>
+                    <button
+                        onClick={() => setShowForm(!showForm)}
+                        className="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 transition"
+                    >
+                        {showForm ? 'סגור טופס' : '+ תיק חדש'}
+                    </button>
+                </div>
             </div>
+
+            {showClientForm && (
+                <form onSubmit={handleCreateClient} className="bg-white p-6 rounded-xl shadow-sm border border-green-100 mb-8 animate-fade-in">
+                    <h3 className="text-lg font-bold mb-4 text-green-800">רישום לקוח חדש במערכת</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <input
+                            type="text" placeholder="שם מלא" className="border p-2 rounded"
+                            value={newClient.name} onChange={e => setNewClient({ ...newClient, name: e.target.value })} required
+                        />
+                        <input
+                            type="email" placeholder="אימייל" className="border p-2 rounded"
+                            value={newClient.email} onChange={e => setNewClient({ ...newClient, email: e.target.value })} required
+                        />
+                        <input
+                            type="text" placeholder="טלפון" className="border p-2 rounded"
+                            value={newClient.phone} onChange={e => setNewClient({ ...newClient, phone: e.target.value })}
+                        />
+                        <button className="bg-green-600 text-white p-2 rounded font-bold md:col-span-3">
+                            צור לקוח
+                        </button>
+                    </div>
+                </form>
+            )}
 
             {showForm && (
                 <div className="bg-white p-6 rounded-lg shadow-md mb-8 border-t-4 border-blue-600">
@@ -93,8 +150,8 @@ const LawyerDashboard = () => {
                         </select>
                         <input
                             type="email"
-                            placeholder="אימייל הלקוח (חייב להיות רשום)"
-                            className="border p-2 rounded"
+                            placeholder="אימייל הלקוח"
+                            className={`border p-2 rounded w-full transition-colors ${newCase.clientEmail ? 'bg-blue-50 border-blue-300' : ''}`}
                             value={newCase.clientEmail}
                             onChange={(e) => setNewCase({ ...newCase, clientEmail: e.target.value })}
                             required
@@ -106,11 +163,26 @@ const LawyerDashboard = () => {
                 </div>
             )}
 
+            <div className="mb-6 relative">
+                <input
+                    type="text"
+                    placeholder="חפש לפי שם תיק או שם לקוח..."
+                    className="w-full p-3 pr-10 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+            </div>
+
             <div className="grid grid-cols-1 gap-6">
-                {cases.length === 0 ? (
+                {filteredCases.length === 0 ? (
                     <p className="text-gray-500 text-center py-10">אין תיקים פעילים כרגע.</p>
                 ) : (
-                    cases.map((c) => (
+                    filteredCases.map((c) => (
                         <div key={c._id} className="bg-white p-6 rounded-lg shadow border-r-4 border-blue-500 hover:shadow-md transition">
                             <div className="flex justify-between items-start">
                                 <div className="flex flex-col gap-1">

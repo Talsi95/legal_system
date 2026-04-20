@@ -7,7 +7,7 @@ export const register = async (req: Request, res: Response) => {
   try {
     const { name, email, password, role } = req.body;
     const hashedEmail = email.toLowerCase();
-    
+
     let user = await User.findOne({ email: hashedEmail });
     if (user) return res.status(400).json({ msg: 'User already exists' });
 
@@ -18,6 +18,32 @@ export const register = async (req: Request, res: Response) => {
     res.status(201).json({ msg: 'User registered successfully' });
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
+  }
+};
+
+export const createClientByLawyer = async (req: Request, res: Response) => {
+  try {
+    const { name, email, phone } = req.body;
+
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    if (existingUser) return res.status(400).json({ msg: 'המשתמש כבר קיים במערכת' });
+
+    const temporaryPassword = Math.random().toString(36).slice(-8);
+    const hashedPassword = await bcrypt.hash(temporaryPassword, 10);
+
+    const newUser = new User({
+      name,
+      email: email.toLowerCase(),
+      password: hashedPassword,
+      phone,
+      role: 'client'
+    });
+
+    await newUser.save();
+
+    res.status(201).json({ msg: 'הלקוח נוצר בהצלחה', tempPassword: temporaryPassword });
+  } catch (error) {
+    res.status(500).json({ error: 'שגיאה ביצירת המשתמש' });
   }
 };
 

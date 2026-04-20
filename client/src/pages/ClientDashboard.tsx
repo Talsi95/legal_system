@@ -84,32 +84,36 @@ const ClientDashboard = () => {
                             <div className="md:col-span-2 bg-white p-6 rounded-2xl shadow-sm">
                                 <h3 className="font-bold text-lg mb-6 text-gray-800">מה התחדש בתיק?</h3>
                                 <div className="relative border-r-2 border-gray-100 pr-6 space-y-8">
-                                    {c.timeline.map((item) => (
-                                        <div key={item._id} className={`relative transition-opacity ${item.isCompleted ? 'opacity-80' : 'opacity-100'}`}>
+                                    {c.timeline.length > 0 ? (
+                                        c.timeline.map((item) => (
+                                            <div key={item._id} className={`relative transition-opacity ${item.isCompleted ? 'opacity-80' : 'opacity-100'}`}>
 
-                                            <div className={`absolute -right-[31px] top-1 w-4 h-4 rounded-full border-2 border-white shadow-sm flex items-center justify-center ${item.isCompleted ? 'bg-green-500' : 'bg-gray-300'
-                                                }`}>
-                                                {item.isCompleted && <span className="text-[10px] text-white">✓</span>}
+                                                <div className={`absolute -right-[31px] top-1 w-4 h-4 rounded-full border-2 border-white shadow-sm flex items-center justify-center ${item.isCompleted ? 'bg-green-500' : 'bg-gray-300'
+                                                    }`}>
+                                                    {item.isCompleted && <span className="text-[10px] text-white">✓</span>}
+                                                </div>
+
+                                                <span className="text-xs text-gray-400">{new Date(item.date).toLocaleDateString('he-IL')}</span>
+
+                                                <div className="flex items-center gap-2">
+                                                    <h4 className={`font-bold ${item.isCompleted ? 'text-gray-500 line-through' : 'text-gray-800'}`}>
+                                                        {item.title}
+                                                    </h4>
+                                                    {item.isCompleted && (
+                                                        <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-medium">
+                                                            הושלם
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                <p className={`text-sm mt-1 ${item.isCompleted ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                    {item.description}
+                                                </p>
                                             </div>
-
-                                            <span className="text-xs text-gray-400">{new Date(item.date).toLocaleDateString('he-IL')}</span>
-
-                                            <div className="flex items-center gap-2">
-                                                <h4 className={`font-bold ${item.isCompleted ? 'text-gray-500 line-through' : 'text-gray-800'}`}>
-                                                    {item.title}
-                                                </h4>
-                                                {item.isCompleted && (
-                                                    <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-medium">
-                                                        הושלם
-                                                    </span>
-                                                )}
-                                            </div>
-
-                                            <p className={`text-sm mt-1 ${item.isCompleted ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                {item.description}
-                                            </p>
-                                        </div>
-                                    ))}
+                                        ))
+                                    ) : (
+                                        <p className="text-sm text-gray-400">אין חדש כרגע.</p>
+                                    )}
                                 </div>
                             </div>
                             <div className="bg-white p-6 rounded-2xl shadow-sm border border-orange-100">
